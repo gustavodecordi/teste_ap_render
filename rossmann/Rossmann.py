@@ -76,16 +76,16 @@ class Rossmann( object ):
     
     def feature_engineering( self, df2 ):       
         # year
-        df2['year'] = df2['date'].dt.year
+        df2['year'] = df2['date'].dt.year.astype( np.int64 )
 
         # month
-        df2['month'] = df2['date'].dt.month
+        df2['month'] = df2['date'].dt.month.astype( np.int64 )
 
         # day
-        df2['day'] = df2['date'].dt.day
+        df2['day'] = df2['date'].dt.day.astype( np.int64 )
 
         # week of year
-        df2['week_of_year'] = df2['date'].dt.weekofyear
+        df2['week_of_year'] = df2['date'].dt.isocalendar().week.astype( np.int64 )
 
         # year week (ano - semana do ano)
         df2['year_week'] = df2['date'].dt.strftime( '%Y-%W' )
@@ -94,14 +94,14 @@ class Rossmann( object ):
         df2['competition_since'] = df2.apply( lambda x: datetime.datetime( year = x['competition_open_since_year'], month = x['competition_open_since_month'], day = 1 ), axis = 1 )
 
         # competition_time_month
-        df2['competition_time_month'] = ( ( df2['date'] - df2['competition_since'] ) / 30 ).apply( lambda x: x.days ).astype(int)
+        df2['competition_time_month'] = ( ( df2['date'] - df2['competition_since'] ) / 30 ).apply( lambda x: x.days ).astype(np.int64)
 
         # promo since
         df2['promo_since'] = df2['promo2_since_year'].astype( str ) + '-' + df2['promo2_since_week'].astype( str )
         df2['promo_since'] = df2['promo_since'].apply( lambda x: datetime.datetime.strptime( x + '-1', '%Y-%W-%w' ) - datetime.timedelta( days = 7 ) )
 
         # promo_time_week
-        df2['promo_time_week'] = ( ( df2['date'] - df2['promo_since'] ) / 7 ).apply( lambda x: x.days ).astype( int )
+        df2['promo_time_week'] = ( ( df2['date'] - df2['promo_since'] ) / 7 ).apply( lambda x: x.days ).astype( np.int64 )
 
         # assortment
         df2['assortment'] = df2['assortment'].apply( lambda x: 'basic' if x == 'a' else 'extra' if x == 'b' else 'extended' )   
@@ -139,7 +139,7 @@ class Rossmann( object ):
         
         # 5.3.1. Encoding
         # state_holiday - One Hot Encoding
-        df5 = pd.get_dummies(df5, prefix=['state_holiday'], columns=['state_holiday'])
+        df5 = pd.get_dummies(df5, prefix=['state_holiday'], columns=['state_holiday'], dtype=int)
 
         # store_type - Label Encoding
         df5['store_type'] = self.store_type_scaler.transform(df5['store_type'])
